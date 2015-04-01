@@ -1,36 +1,24 @@
-﻿'use strict';
-
-var manifestTools = require('./lib/tools'),
+﻿var manifestTools = require('./tools'),
     path = require('path'),
     exec = require('child_process').exec;
 
-// scan a site to retrieve its manifest 
-var siteUrl = process.argv[2];
-console.log('Scanning ' + siteUrl + ' for manifest...');
-manifestTools.getManifestFromSite(siteUrl, function (err, manifestInfo) {
-    if (err) {
-        console.log(err);
-        return err;
-    }
-    
-    // query manifest info and retrieve its app name
-    console.log('Found a ' + manifestInfo.format.toUpperCase() + ' manifest');
-    console.log();
-    console.log(JSON.stringify(manifestInfo.content, null, 4));
+function createCordovaApp(manifestInfo, callback) {
     var appName = manifestInfo.content.short_name;
     
     // determine the path where the Cordova app will be created
     var actualPath = process.cwd();
     var generatedAppDir = path.join(actualPath, appName);
-    
+
     // create the Cordova app
     console.log('Creating the Cordova application...');
     var cmdLine = 'cordova create ' + appName + ' com.microsoft.sample ' + appName;
-    console.log('    ' + cmdLine);
+    
+    // TODO: implement log level logic to decide when to show these messages
+    //console.log('    ' + cmdLine);
+
     exec(cmdLine, function (err, stdout, stderr) {
         if (err) {
-            console.error(err);
-            return;
+            return callback(err);
         }
         
         // copy the manifest file to the 'www' folder of the app
@@ -38,8 +26,7 @@ manifestTools.getManifestFromSite(siteUrl, function (err, manifestInfo) {
         var manifestFilePath = path.join(generatedAppDir, 'www', 'manifest.json');
         manifestTools.writeToFile(manifestInfo, manifestFilePath, function (err) {
             if (err) {
-                console.log(err);
-                return err;
+                return callback(err);
             }
             
             process.chdir(generatedAppDir);
@@ -49,30 +36,27 @@ manifestTools.getManifestFromSite(siteUrl, function (err, manifestInfo) {
             cmdLine = 'cordova platform add android windows ios';
             exec(cmdLine, function (err, stdout, stderr) {
                 if (err) {
-                    console.error(err);
-                    return;
+                    return callback(err);
                 }
                 
                 // add the Hosted Web App plugin
                 console.log('Adding the Hosted Web App plugin to the project...');
                 exec('cordova plugin add "../../../cordovaApps/plugins/com.microsoft.hostedwebapp"', function (err, stdout, stderr) {
                     if (err) {
-                        console.error(err);
-                        return;
+                        return callback(err);
                     }
-
+                    
                     // build the platform-specific projects
                     console.log('Running cordova build...');
                     exec('cordova build windows android', function (err, stdout, stderr) {
-                        if (err) {
-                            console.error(err);
-                            return;
-                            
-                            console.log('The Cordova application is ready!');
-                        }
+                        return callback(err);   
                     });
                 });
             });
         });
     });
-});
+}
+
+module.exports = {
+    createCordovaApp: createCordovaApp
+}

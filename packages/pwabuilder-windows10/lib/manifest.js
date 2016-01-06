@@ -1,15 +1,113 @@
+// from lib/manifestTools/transformations/windows10.js and windows10utils.js
 'use strict';
 
-var url = require('url');
+var url = require('url'),
+    fs = require('fs'),
+    path = require('path'),
+    Q = require('q');
 
-var manifoldjsLib = require('manifoldjs-lib');
-     
-var utils = manifoldjsLib.utils,
-    packageTools = manifoldjsLib.packageTools;
+var manifoldjsLib = require('manifoldjs-lib'),
+    utils = manifoldjsLib.utils,
+    packageTools = manifoldjsLib.packageTools,
+    CustomError = manifoldjsLib.CustomError;
+
+var constants = require('./constants');
 
 var metadataItemTemplate = '\r\n\t\t<build:Item Name ="{0}" Version ="{1}" />';
 
 var baseAcurMatch;
+
+var validIconFormats = [
+  'png',
+  'image/png'
+];
+
+function convertFromBase(manifestInfo, callback) {
+
+  if (!manifestInfo || !manifestInfo.content) {
+    return Q.reject(new Error('Manifest content is empty or not initialized.')).nodeify(callback);
+  }
+
+  var originalManifest = manifestInfo.content;
+
+  if (!originalManifest.start_url) {
+    return Q.reject(new Error('Start URL is required.')).nodeify(callback);
+  }
+  
+  var manifestTemplatePath = path.join(__dirname, 'assets', 'appxmanifest-template.xml');
+
+  return Q.nfcall(fs.readFile, manifestTemplatePath).then(function (data) {
+    var timestamp = manifestInfo.timestamp || new Date().toISOString().replace(/T/, ' ').replace(/\.[0-9]+/, ' ');
+
+    var rawManifest = data.toString();
+    rawManifest = replaceManifestValues(manifestInfo, rawManifest);
+    
+    var icons = {};
+    if (originalManifest.icons && originalManifest.icons.length) {
+      for (var i = 0; i < originalManifest.icons.length; i++) {
+        var icon = originalManifest.icons[i];
+        
+        if (isValidIconFormat(icon, validIconFormats)) {
+          var iconDimensions = icon.sizes.split('x');
+          if (iconDimensions[0] === '44' && iconDimensions[1] === '44') {
+            icons['44x44'] = { 'url': icon.src, 'fileName': 'smalllogo.scale-100.png' };
+          } else if (iconDimensions[0] === '50' && iconDimensions[1] === '50') {
+            icons['50x50'] = { 'url': icon.src, 'fileName': 'storelogo.scale-100.png' };
+          } else if (iconDimensions[0] === '150' && iconDimensions[1] === '150') {
+            icons['150x150'] = { 'url': icon.src, 'fileName': 'logo.scale-100.png' };
+          } else if (iconDimensions[0] === '620' && iconDimensions[1] === '300') {
+            icons['620x300'] = { 'url': icon.src, 'fileName': 'splashscreen.scale-100.png' };
+          }
+        }
+      }
+    }
+    
+    var manifest = {
+      'rawData': rawManifest,
+      'icons': icons,
+    };
+
+    var convertedManifestInfo = {
+      'content': manifest,
+      'format': constants.WINDOWS10_MANIFEST_FORMAT,
+      'timestamp' : timestamp
+    };
+    
+    if (manifestInfo.generatedUrl) {
+      convertedManifestInfo.generatedUrl = manifestInfo.generatedUrl;
+    }
+
+    if (manifestInfo.generatedFrom) {
+      convertedManifestInfo.generatedFrom = manifestInfo.generatedFrom;
+    }
+    
+    return convertedManifestInfo;
+  })
+  .catch(function (err) {
+    return Q.reject(new CustomError('Could not read the manifest template', err));
+  })
+  .nodeify(callback);
+}
+
+function getFormatFromIcon(icon) {
+  return icon.type || (icon.src && icon.src.split('.').pop());
+}
+
+function isValidIconFormat(icon, validFormats) {
+  if (!validFormats || validFormats.length === 0) {
+    return true;
+  }
+  
+  var iconFormat = getFormatFromIcon(icon);
+  
+  for (var i = 0; i < validFormats.length; i++) {
+    if (validFormats[i].toLowerCase() === iconFormat) {
+      return true;
+    }
+  }
+  
+  return false;
+}
 
 function findRuleByMatch(acurList, match) {
   for (var i = 0; i < acurList.length; i++) {
@@ -58,6 +156,7 @@ function replaceManifestValues(w3cManifestInfo, content) {
   var applicationId = utils.sanitizeName(w3cManifest.short_name);
 
   // Update general properties
+  var appModule = packageTools.getPackageInformation();
   replacedContent = replacedContent.replace(/{IdentityName}/g, guid)
                                     .replace(/{PhoneProductId}/g, guid)
                                     .replace(/{DisplayName}/g, w3cManifest.short_name)
@@ -66,7 +165,7 @@ function replaceManifestValues(w3cManifestInfo, content) {
                                     .replace(/{DisplayName}/g, w3cManifest.short_name)
                                     .replace(/{Description}/g, w3cManifest.name || w3cManifest.short_name)
                                     .replace(/{RotationPreference}/g, w3cManifest.orientation || 'portrait')
-                                    .replace(/{ManifoldJSVersion}/g, packageTools.getCurrentPackageVersion())
+                                    .replace(/{ManifoldJSVersion}/g, appModule.version)
                                     .replace(/{GeneratedFrom}/g, w3cManifestInfo.generatedFrom || 'API')
                                     .replace(/{GenerationDate}/g, timestamp)
                                     .replace(/{theme_color}/g, w3cManifest.theme_color || 'blue');
@@ -141,5 +240,5 @@ function replaceManifestValues(w3cManifestInfo, content) {
 }
 
 module.exports = {
-  replaceManifestValues: replaceManifestValues
-};
+  convertFromBase: convertFromBase
+}

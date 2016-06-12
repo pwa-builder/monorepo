@@ -40,50 +40,6 @@ var iconMap = {
   'BadgeLogo':          [   '24x24',	  '30x30',     '36x36',     '48x48',      '96x96' ]
 };
 
-var capabilityMap = { 
-  'internetClient':               'capability',
-  'internetClientServer':         'capability',
-  'privateNetworkClientServer':   'capability',
-  'allJoyn':                      'capability',
-  'codeGeneration':               'capability',
-  'musicLibrary':                 'capability2', 
-  'picturesLibrary':              'capability2', 
-  'videosLibrary':                'capability2', 
-  'removableStorage':             'capability2', 
-  'appointments':                 'capability2',
-  'contacts':                     'capability2',
-  'phoneCall':                    'capability2',
-  'userAccountInformation':       'capability2',
-  'voipCall':	                    'capability2',
-  'objects3D':	                  'capability2',
-  'blockedChatMessages':	        'capability2',
-  'lowLevelDevices':	            'capability2',
-  'systemManagement':	            'capability2',
-  'backgroundMediaPlayback':      'capability3',
-  'userNotificationListener':     'capability3',
-  'recordedCallsFolder':	        'mobile',
-  'location':                     'device',
-  'microphone':                   'device',
-  'proximity':                    'device',
-  'webcam':                       'device',
-  'usb':                          'device',
-  'humaninterfacedevice':         'device',
-  'pointOfService':               'device',
-  'bluetooth':                    'device',
-  'wiFiControl':                  'device',
-  'radios':                       'device',
-  'optical':                      'device',
-  'activity':                     'device',
-};
-
-var capabilityTypeMap = {
-  'capability':   'Capability',
-  'capability2':  'uap:Capability',
-  'capability3':  'uap3:Capability',
-  'mobile':       'mobile:Capability',
-  'device':       'DeviceCapability'
-};
-
 var baseAcurMatch;
 
 var validIconFormats = [

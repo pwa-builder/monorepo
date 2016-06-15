@@ -40,6 +40,50 @@ var iconMap = {
   'BadgeLogo':          [   '24x24',	  '30x30',     '36x36',     '48x48',      '96x96' ]
 };
 
+var capabilityMap = { 
+  'internetclient':               'capability',
+  'internetclientserver':         'capability',
+  'privatenetworkclientserver':   'capability',
+  'alljoyn':                      'capability',
+  'codegeneration':               'capability',
+  'musiclibrary':                 'capability2', 
+  'pictureslibrary':              'capability2', 
+  'videoslibrary':                'capability2', 
+  'removablestorage':             'capability2', 
+  'appointments':                 'capability2',
+  'contacts':                     'capability2',
+  'phonecall':                    'capability2',
+  'useraccountinformation':       'capability2',
+  'voipcall':	                    'capability2',
+  'objects3d':	                  'capability2',
+  'blockedchatmessages':	        'capability2',
+  'lowleveldevices':	            'capability2',
+  'systemmanagement':	            'capability2',
+  'backgroundmediaplayback':      'capability3',
+  'usernotificationlistener':     'capability3',
+  'recordedcallsfolder':	        'mobile',
+  'location':                     'device',
+  'microphone':                   'device',
+  'proximity':                    'device',
+  'webcam':                       'device',
+  'usb':                          'device',
+  'humaninterfacedevice':         'device',
+  'pointofservice':               'device',
+  'bluetooth':                    'device',
+  'wificontrol':                  'device',
+  'radios':                       'device',
+  'optical':                      'device',
+  'activity':                     'device',
+};
+
+var capabilityTypeMap = {
+  'capability':   'Capability',
+  'capability2':  'uap:Capability',
+  'capability3':  'uap3:Capability',
+  'mobile':       'mobile:Capability',
+  'device':       'DeviceCapability'
+};
+
 var baseAcurMatch;
 
 var validIconFormats = [
@@ -214,14 +258,14 @@ function replaceManifestValues (w3cManifestInfo, content) {
       }
 
       var capabilityName = typeof capability !== 'string' && capability.name ? capability.name : capability;
-      var capabilityType = capabilityMap[capabilityName];
+      var capabilityType = capabilityMap[capabilityName.toLowerCase()];
 
       if (capabilityType) {
         capabilities += indentationChars + '<' + capabilityTypeMap[capabilityType] + ' Name="' + capabilityName + '" />';
       }
     });
   }
-  
+
   replacedContent = replacedContent.replace(/{Capabilities}/g, capabilities);
 
   return replacedContent;

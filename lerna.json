@@ -2,8 +2,5 @@
   "packages": [
     "packages/*"
   ],
-  "version": "0.0.0",
-  "script": {
-    "dev": "./packages/PWAbuilder dev"
-  }
+  "version": "0.0.0"
 }

@@ -2,13 +2,13 @@
 
 ## Packages scripts
 
-- Site:
-  - site-dev
-  - site-setup
-  - site-build-docker-dev
-  - site-run-docker-dev
+- [Site](https://github.com/southworkscom/monorepo/tree/master/packages/PWABuilder)
+  - `site-dev`
+  - `site-setup`
+  - `site-build-docker-dev`
+  - `site-run-docker-dev`
 
-- API
-  - api-start
-  - api- setup
+- [API](/packages/pwabuilder-api/README.md)
+  - `api-start`
+  - `api-setup`
 

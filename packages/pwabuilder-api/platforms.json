@@ -1,0 +1,30 @@
+{
+    "windows10": {
+        "packageName": "pwabuilder-windows10",
+        "source": "pwabuilder-windows10"
+    },
+    "android": {
+        "packageName": "pwabuilder-android",
+        "source": "pwabuilder-android"
+    },
+    "mac": {
+        "packageName": "pwabuilder-macos",
+        "source": "pwabuilder-macos"
+    },
+    "ios": {
+        "packageName": "pwabuilder-cordova",
+        "source": "pwabuilder-cordova"
+    },
+    "MacOS": {
+        "packageName": "pwabuilder-macos",
+        "source": "pwabuilder-macos"
+    },
+    "windows": {
+        "packageName": "pwabuilder-cordova",
+        "source": "pwabuilder-cordova"
+    },
+    "web": {
+        "packageName": "pwabuilder-web",
+        "source": "pwabuilder-web"
+    }
+}

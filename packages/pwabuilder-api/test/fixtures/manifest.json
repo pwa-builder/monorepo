@@ -1,0 +1,10 @@
+{
+    "content": {
+        "start_url": "http://www.bamideas.com/",
+        "short_name": "WwwBamideasCom",
+        "custom_foo": {
+            "name": "Foo Custom"
+        }
+    },
+    "format": "w3c"
+}
